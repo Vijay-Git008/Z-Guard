@@ -1,0 +1,691 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="theme-color" content="#0a0d12" />
+<title>ZGuard · Zero Trust Industrial Guardian</title>
+<meta name="description" content="Industrial cybersecurity control room for the ZGuard Zero Trust Guardian." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Inter','ui-sans-serif','system-ui','sans-serif'],
+          mono: ['JetBrains Mono','ui-monospace','monospace'],
+        },
+        colors: {
+          background: 'var(--background)',
+          foreground: 'var(--foreground)',
+          border:     'var(--border)',
+          input:      'var(--input)',
+          ring:       'var(--ring)',
+          muted: 'var(--muted)',
+          'muted-foreground': 'var(--muted-foreground)',
+          card: 'var(--card)',
+          'card-foreground': 'var(--card-foreground)',
+          primary: 'var(--primary)',
+          'primary-foreground': 'var(--primary-foreground)',
+          accent: 'var(--accent)',
+          panel: 'var(--panel)',
+          'panel-elevated': 'var(--panel-elevated)',
+          safe: 'var(--safe)',
+          warn: 'var(--warn)',
+          maint: 'var(--maint)',
+          danger: 'var(--danger)',
+        },
+      }
+    }
+  };
+</script>
+<style>
+:root{
+  --radius:.5rem;
+  --background:oklch(0.14 0.01 260);
+  --foreground:oklch(0.96 0.005 250);
+  --card:oklch(0.18 0.012 260);
+  --card-foreground:oklch(0.96 0.005 250);
+  --primary:oklch(0.86 0.2 145);
+  --primary-foreground:oklch(0.15 0.02 150);
+  --muted:oklch(0.22 0.012 260);
+  --muted-foreground:oklch(0.68 0.015 260);
+  --accent:oklch(0.28 0.02 260);
+  --border:oklch(0.28 0.015 260);
+  --input:oklch(0.24 0.015 260);
+  --ring:oklch(0.86 0.2 145);
+  --panel:oklch(0.17 0.012 260);
+  --panel-elevated:oklch(0.21 0.014 260);
+  --safe:oklch(0.86 0.2 145);
+  --warn:oklch(0.86 0.18 90);
+  --maint:oklch(0.78 0.19 55);
+  --danger:oklch(0.68 0.25 27);
+  --grid-line:oklch(0.28 0.015 260 / 0.5);
+  --color-safe:var(--safe);--color-warn:var(--warn);--color-maint:var(--maint);--color-danger:var(--danger);
+  --color-border:var(--border);--color-panel:var(--panel);--color-panel-elevated:var(--panel-elevated);
+  --color-muted-foreground:var(--muted-foreground);
+}
+html,body{background-color:var(--background);color:var(--foreground);font-family:'Inter',ui-sans-serif,system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
+body{
+  background-image:
+    radial-gradient(circle at 20% 0%, oklch(0.86 0.2 145 / 0.06), transparent 50%),
+    radial-gradient(circle at 80% 100%, oklch(0.68 0.25 27 / 0.05), transparent 50%),
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size:auto,auto,48px 48px,48px 48px;
+  background-position:0 0,0 0,-1px -1px,-1px -1px;
+  min-height:100vh;
+}
+.panel{
+  background:linear-gradient(180deg,var(--panel-elevated),var(--panel));
+  border:1px solid var(--border);border-radius:.75rem;
+  box-shadow:0 1px 0 oklch(1 0 0 / 0.04) inset,0 20px 40px -20px oklch(0 0 0 / 0.5);
+}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace;font-feature-settings:"tnum";}
+.neon-text{color:var(--safe);text-shadow:0 0 12px oklch(0.86 0.2 145 / 0.6);}
+@keyframes zg-pulse-ring{0%{box-shadow:0 0 0 0 oklch(0.86 0.2 145 / 0.6);}70%{box-shadow:0 0 0 10px oklch(0.86 0.2 145 / 0);}100%{box-shadow:0 0 0 0 oklch(0.86 0.2 145 / 0);}}
+@keyframes zg-scan{0%{transform:translateY(-100%);opacity:0;}50%{opacity:1;}100%{transform:translateY(100%);opacity:0;}}
+@keyframes zg-shake{0%,100%{transform:translateX(0) rotate(0);}20%{transform:translateX(-2px) rotate(-1deg);}40%{transform:translateX(2px) rotate(1deg);}60%{transform:translateX(-2px) rotate(-1deg);}80%{transform:translateX(2px) rotate(1deg);}}
+@keyframes zg-flow-in{0%{opacity:0;transform:translateX(-8px);}100%{opacity:1;transform:translateX(0);}}
+@keyframes zg-blink{0%,100%{opacity:1;}50%{opacity:.35;}}
+@keyframes zg-spin-slow{to{transform:rotate(360deg);}}
+@keyframes zg-heat{0%,100%{filter:drop-shadow(0 0 6px oklch(0.68 0.25 27 / 0.4));}50%{filter:drop-shadow(0 0 18px oklch(0.68 0.25 27 / 0.9));}}
+.zg-pulse{animation:zg-pulse-ring 2s infinite;}
+.zg-blink{animation:zg-blink 1.4s infinite;}
+.zg-shake{animation:zg-shake .25s infinite;}
+.zg-heat{animation:zg-heat 1.2s ease-in-out infinite;}
+.zg-flow-in{animation:zg-flow-in .4s ease-out both;}
+.zg-spin-slow{animation:zg-spin-slow 3s linear infinite;}
+.zg-scanline{position:relative;overflow:hidden;}
+.zg-scanline::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent,oklch(0.86 0.2 145 / 0.08),transparent);animation:zg-scan 4s linear infinite;pointer-events:none;}
+.text-safe{color:var(--safe);} .text-warn{color:var(--warn);} .text-maint{color:var(--maint);} .text-danger{color:var(--danger);}
+.bg-safe{background-color:var(--safe);} .bg-warn{background-color:var(--warn);} .bg-maint{background-color:var(--maint);} .bg-danger{background-color:var(--danger);}
+.border-safe{border-color:var(--safe);} .border-warn{border-color:var(--warn);} .border-danger{border-color:var(--danger);}
+</style>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" data-type="module">
+const { useState, useEffect, useMemo } = React;
+
+/* ================= data ================= */
+const rand = (a,b)=>+(a+Math.random()*(b-a)).toFixed(1);
+const hist = (base,spread)=>Array.from({length:24},()=>+(base+(Math.random()-0.5)*spread).toFixed(2));
+const now = ()=>new Date().toTimeString().slice(0,8);
+const uid = ()=>Math.random().toString(36).slice(2,9);
+
+const baseFlow = [
+  { label:"Guardian Analysis Started", status:"ok" },
+  { label:"Temperature Analysis", status:"ok" },
+  { label:"Current Analysis", status:"ok" },
+  { label:"Vibration Analysis", status:"ok" },
+  { label:"RFID Verification", status:"ok" },
+  { label:"HTTPS Secure", status:"ok" },
+  { label:"Known Device", status:"ok" },
+  { label:"Tamper Switch Closed", status:"ok" },
+  { label:"Health Score Calculated", status:"ok" },
+  { label:"Trust Score Calculated", status:"ok" },
+  { label:"Risk Score Calculated", status:"ok" },
+  { label:"ISI Calculated", status:"ok" },
+  { label:"FINAL DECISION — SAFE TO OPERATE", status:"ok" },
+];
+
+const initialState = {
+  machineId:"ZG-MTR-04A21", firmware:"v2.4.1-guardian", mode:"AUTO / PRODUCTION", uptime:"72h 14m",
+  motor:"RUNNING", decision:"SAFE",
+  reason:"All Guardian checks passed. Machine authorized to operate.",
+  isi:96, health:94, trust:98, risk:8,
+  sensors:{
+    temperature:{value:52.4,min:20,max:75,unit:"°C",status:"ok",history:hist(52,6)},
+    current:{value:12.6,min:8,max:18,unit:"A",status:"ok",history:hist(12.5,2)},
+    voltage:{value:231,min:220,max:240,unit:"V",status:"ok",history:hist(231,3)},
+    vibration:{value:1.4,min:0,max:4.5,unit:"mm/s",status:"ok",history:hist(1.4,0.6)},
+    power:{value:2.91,min:1.5,max:4.2,unit:"kW",status:"ok",history:hist(2.9,0.4)},
+  },
+  security:{https:"ok",rfid:"ok",known_device:"ok",tamper:"ok",sensor_integrity:"ok",comm_integrity:"ok"},
+  flow: baseFlow,
+  alerts:[
+    {id:"a1",severity:"low",title:"Scheduled calibration in 6h",time:"12:04:22"},
+    {id:"a2",severity:"medium",title:"Voltage micro-drift detected",time:"11:48:07"},
+  ],
+  timeline:[
+    {id:"t1",time:"12:14:03",message:"Guardian handshake OK · ESP32 heartbeat 1.2s",kind:"success"},
+    {id:"t2",time:"12:13:41",message:"RFID badge #A21F verified · operator MARCO_R",kind:"info"},
+    {id:"t3",time:"12:12:10",message:"ISI recomputed → 96 (SAFE)",kind:"info"},
+    {id:"t4",time:"12:10:00",message:"Firmware integrity check passed",kind:"success"},
+  ],
+  connections:{esp32:"ok",https:"ok",firebase:"ok"},
+  visualFx:{shake:false,heat:false,tamperFlash:false,commLost:false},
+  lastAttack:"normal",
+};
+
+const attacks = {
+  normal:{label:"Normal Operation",motor:"RUNNING",decision:"SAFE",reason:"All Guardian checks passed. Machine authorized to operate.",isi:96,health:94,trust:98,risk:8,alert:{severity:"low",title:"System nominal"},event:{message:"Normal operation resumed · Guardian: SAFE",kind:"success"},fx:{shake:false,heat:false,tamperFlash:false,commLost:false}},
+  unauth_rfid:{label:"Unauthorized RFID",motor:"STOPPED",decision:"STOP",reason:"Unauthorized RFID badge presented. Access denied by Guardian.",isi:22,health:88,trust:12,risk:91,patchSecurity:{rfid:"danger",known_device:"warn"},failSteps:["RFID Verification"],alert:{severity:"critical",title:"Unauthorized RFID badge blocked"},event:{message:"SECURITY · Unknown RFID #FFEE12 rejected",kind:"danger"}},
+  tamper:{label:"Tamper Attack",motor:"STOPPED",decision:"STOP",reason:"Physical tamper switch opened. Enclosure integrity compromised.",isi:14,health:70,trust:8,risk:96,patchSecurity:{tamper:"danger"},failSteps:["Tamper Switch Closed"],alert:{severity:"critical",title:"Enclosure tamper detected"},event:{message:"TAMPER · Enclosure switch open · motor halted",kind:"danger"},fx:{tamperFlash:true}},
+  sensor_failure:{label:"Sensor Failure",motor:"MAINTENANCE",decision:"MAINTENANCE",reason:"Temperature sensor returning invalid readings. Maintenance required.",isi:48,health:40,trust:62,risk:71,patchSensors:s=>{s.temperature.value=-99;s.temperature.status="danger";},patchSecurity:{sensor_integrity:"danger"},failSteps:["Temperature Analysis"],alert:{severity:"high",title:"Temperature sensor failure"},event:{message:"SENSOR · Temperature channel invalid",kind:"warn"}},
+  sensor_spoof:{label:"Sensor Spoofing",motor:"STOPPED",decision:"STOP",reason:"Sensor stream signature mismatch. Spoofed values rejected.",isi:18,health:74,trust:10,risk:92,patchSecurity:{sensor_integrity:"danger",comm_integrity:"warn"},failSteps:["Temperature Analysis","Vibration Analysis"],alert:{severity:"critical",title:"Sensor spoofing detected"},event:{message:"SPOOF · Sensor HMAC mismatch on channel 2",kind:"danger"}},
+  mitm:{label:"MITM Attack",motor:"STOPPED",decision:"STOP",reason:"TLS certificate anomaly. Man-in-the-middle suspected.",isi:12,health:90,trust:5,risk:97,patchSecurity:{https:"danger",comm_integrity:"danger"},failSteps:["HTTPS Secure"],connections:{https:"danger"},alert:{severity:"critical",title:"MITM · TLS anomaly"},event:{message:"MITM · Untrusted CA fingerprint on uplink",kind:"danger"}},
+  replay:{label:"Replay Attack",motor:"STOPPED",decision:"STOP",reason:"Command nonce replay detected. Duplicate frame rejected.",isi:20,health:90,trust:14,risk:90,patchSecurity:{comm_integrity:"danger"},failSteps:["HTTPS Secure"],warnSteps:["Known Device"],alert:{severity:"critical",title:"Replay attack blocked"},event:{message:"REPLAY · Nonce 0x91AC seen twice · dropped",kind:"danger"}},
+  fake_command:{label:"Fake Command",motor:"STOPPED",decision:"STOP",reason:"Command signature invalid. Origin not authorized.",isi:16,health:88,trust:8,risk:94,patchSecurity:{known_device:"danger",comm_integrity:"warn"},failSteps:["Known Device"],alert:{severity:"critical",title:"Unsigned command rejected"},event:{message:"CMD · Invalid signature from 10.0.4.77",kind:"danger"}},
+  unknown_device:{label:"Unknown Device",motor:"WARNING",decision:"WARNING",reason:"New MAC address probing endpoint. Not in whitelist.",isi:58,health:90,trust:40,risk:65,patchSecurity:{known_device:"warn"},warnSteps:["Known Device"],alert:{severity:"high",title:"Unknown device on subnet"},event:{message:"NET · MAC AA:14:9F:… not whitelisted",kind:"warn"}},
+  https_failure:{label:"HTTPS Failure",motor:"STOPPED",decision:"STOP",reason:"TLS handshake failed. Secure uplink unavailable.",isi:25,health:92,trust:20,risk:85,patchSecurity:{https:"danger"},failSteps:["HTTPS Secure"],connections:{https:"danger"},alert:{severity:"high",title:"HTTPS handshake failed"},event:{message:"TLS · Handshake aborted (bad_record_mac)",kind:"danger"}},
+  esp_offline:{label:"ESP32 Offline",motor:"STOPPED",decision:"STOP",reason:"ESP32 heartbeat lost. Guardian in fail-safe.",isi:5,health:0,trust:0,risk:100,patchSecurity:{comm_integrity:"danger"},failSteps:["Guardian Analysis Started"],connections:{esp32:"danger",https:"danger",firebase:"warn"},alert:{severity:"critical",title:"ESP32 offline"},event:{message:"LINK · ESP32 heartbeat missing > 5s",kind:"danger"},fx:{commLost:true}},
+  comm_lost:{label:"Communication Lost",motor:"MAINTENANCE",decision:"MAINTENANCE",reason:"Cloud uplink unstable. Local Guardian still active.",isi:44,health:80,trust:55,risk:70,patchSecurity:{comm_integrity:"danger"},warnSteps:["HTTPS Secure"],connections:{firebase:"danger"},alert:{severity:"high",title:"Cloud communication lost"},event:{message:"CLOUD · Firebase uplink unreachable",kind:"warn"},fx:{commLost:true}},
+  high_temp:{label:"High Temperature",motor:"WARNING",decision:"WARNING",reason:"Motor temperature above safe threshold.",isi:52,health:55,trust:88,risk:74,patchSensors:s=>{s.temperature.value=88.6;s.temperature.status="danger";},warnSteps:["Temperature Analysis"],alert:{severity:"high",title:"Motor over-temperature"},event:{message:"THERM · Temperature 88.6°C exceeds threshold",kind:"warn"},fx:{heat:true}},
+  high_current:{label:"High Current",motor:"WARNING",decision:"WARNING",reason:"Current draw above nominal envelope.",isi:55,health:60,trust:88,risk:68,patchSensors:s=>{s.current.value=22.4;s.current.status="danger";},warnSteps:["Current Analysis"],alert:{severity:"high",title:"Overcurrent detected"},event:{message:"ELEC · Current 22.4A exceeds envelope",kind:"warn"}},
+  high_vibration:{label:"High Vibration",motor:"WARNING",decision:"WARNING",reason:"Vibration RMS above safe envelope. Possible bearing wear.",isi:50,health:48,trust:88,risk:76,patchSensors:s=>{s.vibration.value=6.8;s.vibration.status="danger";},warnSteps:["Vibration Analysis"],alert:{severity:"high",title:"High vibration RMS"},event:{message:"VIB · 6.8 mm/s exceeds bearing envelope",kind:"warn"},fx:{shake:true}},
+};
+const attackList = Object.keys(attacks).map(id=>({id,label:attacks[id].label}));
+
+function applyAttack(prev,id){
+  const def = attacks[id];
+  const next = JSON.parse(JSON.stringify(initialState));
+  next.timeline = prev.timeline; next.machineId = prev.machineId; next.firmware = prev.firmware;
+  next.motor=def.motor; next.decision=def.decision; next.reason=def.reason;
+  next.isi=def.isi; next.health=def.health; next.trust=def.trust; next.risk=def.risk; next.lastAttack=id;
+  if(def.patchSensors) def.patchSensors(next.sensors);
+  Object.assign(next.security, def.patchSecurity ?? {});
+  Object.assign(next.connections, def.connections ?? {});
+  Object.assign(next.visualFx, {shake:false,heat:false,tamperFlash:false,commLost:false}, def.fx ?? {});
+  const failSet = new Set(def.failSteps ?? []);
+  const warnSet = new Set(def.warnSteps ?? []);
+  next.flow = baseFlow.map(s => failSet.has(s.label) ? {...s,status:"fail"} : warnSet.has(s.label) ? {...s,status:"warn"} : {...s});
+  const fi = next.flow.length - 1;
+  const fLabel = def.decision==="SAFE"?"FINAL DECISION — SAFE TO OPERATE"
+    : def.decision==="WARNING"?"FINAL DECISION — OPERATE WITH CAUTION"
+    : def.decision==="MAINTENANCE"?"FINAL DECISION — MAINTENANCE REQUIRED"
+    : "FINAL DECISION — MACHINE STOPPED";
+  next.flow[fi] = {label:fLabel,status: def.decision==="SAFE"?"ok":def.decision==="STOP"?"fail":"warn"};
+  const t = now();
+  next.alerts = [{id:uid(),severity:def.alert.severity,title:def.alert.title,time:t}, ...prev.alerts].slice(0,6);
+  next.timeline = [{id:uid(),time:t,message:def.event.message,kind:def.event.kind}, ...prev.timeline].slice(0,20);
+  return next;
+}
+
+function tickSensors(s){
+  const next = {...s, sensors:{...s.sensors}};
+  Object.keys(next.sensors).forEach(k => {
+    const sensor = {...next.sensors[k]};
+    if(!(sensor.status==="danger" && sensor.value<0)){
+      const target = sensor.history[sensor.history.length-1] ?? sensor.value;
+      const drift = (Math.random()-0.5)*(sensor.max-sensor.min)*0.03;
+      sensor.value = +(target+drift).toFixed(2);
+    }
+    sensor.history = [...sensor.history.slice(1), sensor.value];
+    next.sensors[k] = sensor;
+  });
+  return next;
+}
+
+/* ================= primitives ================= */
+const statusColor={ok:"text-safe",warn:"text-warn",danger:"text-danger"};
+const statusBg={ok:"bg-safe",warn:"bg-warn",danger:"bg-danger"};
+const statusRing={
+  ok:"shadow-[0_0_16px_var(--safe)]",
+  warn:"shadow-[0_0_16px_var(--warn)]",
+  danger:"shadow-[0_0_16px_var(--danger)]",
+};
+
+const Chip = ({status,label}) => (
+  <span className="inline-flex items-center gap-2 rounded-md border border-border bg-panel-elevated px-2.5 py-1 text-xs uppercase tracking-wider mono">
+    <span className={`h-2 w-2 rounded-full zg-blink ${statusBg[status]} ${statusRing[status]}`} />
+    <span className={statusColor[status]}>{label}</span>
+  </span>
+);
+const SectionTitle = ({eyebrow,title,right}) => (
+  <div className="mb-3 flex items-end justify-between gap-2">
+    <div>
+      <div className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground mono">{eyebrow}</div>
+      <div className="text-sm font-semibold text-foreground">{title}</div>
+    </div>
+    {right}
+  </div>
+);
+
+/* ================= header ================= */
+function Header({state}){
+  const [clock,setClock] = useState(()=>new Date());
+  useEffect(()=>{const i=setInterval(()=>setClock(new Date()),1000);return()=>clearInterval(i);},[]);
+  return (
+    <header className="panel px-4 py-3 sm:px-6">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 lg:flex lg:justify-between">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="relative grid h-11 w-11 shrink-0 place-items-center rounded-lg border border-safe/40 bg-safe/10">
+            <svg viewBox="0 0 24 24" className="h-6 w-6 text-safe" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3Z" />
+              <path d="m9 12 2 2 4-4" />
+            </svg>
+            <span className="absolute inset-0 rounded-lg zg-pulse" />
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="text-lg font-bold tracking-tight">ZGuard</span>
+              <span className="rounded border border-safe/30 bg-safe/10 px-1.5 py-0.5 text-[10px] uppercase text-safe mono">v2.4</span>
+            </div>
+            <div className="truncate text-xs text-muted-foreground">Zero Trust Industrial Guardian · Control Room</div>
+          </div>
+        </div>
+        <div className="col-span-2 flex flex-wrap items-center gap-2 lg:col-span-1">
+          <div className="rounded-md border border-border bg-panel-elevated px-3 py-1.5 mono text-sm tabular-nums">
+            {clock.toTimeString().slice(0,8)}
+            <span className="ml-2 text-[10px] uppercase text-muted-foreground">UTC{-clock.getTimezoneOffset()/60>=0?"+":""}{-clock.getTimezoneOffset()/60}</span>
+          </div>
+          <Chip status={state.connections.esp32} label="ESP32" />
+          <Chip status={state.connections.https} label="HTTPS" />
+          <Chip status={state.connections.firebase} label="Firebase" />
+        </div>
+      </div>
+    </header>
+  );
+}
+
+/* ================= overview ================= */
+const motorColor={RUNNING:"ok",WARNING:"warn",MAINTENANCE:"warn",STOPPED:"danger"};
+
+function MachineOverview({state}){
+  const s = motorColor[state.motor];
+  const items = [
+    {k:"Motor",v:state.motor,color:statusColor[s]},
+    {k:"Machine ID",v:state.machineId},
+    {k:"Firmware",v:state.firmware},
+    {k:"Mode",v:state.mode},
+    {k:"Uptime",v:state.uptime},
+  ];
+  return (
+    <div className="panel p-4">
+      <SectionTitle eyebrow="Asset" title="Machine Overview" />
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+        {items.map(i=>(
+          <div key={i.k} className="rounded-md border border-border bg-panel-elevated p-3">
+            <div className="text-[10px] uppercase tracking-wider text-muted-foreground mono">{i.k}</div>
+            <div className={`mt-1 truncate text-sm font-semibold mono ${i.color??""}`}>{i.v}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ================= gauges ================= */
+function isiTier(v){
+  if(v>=80) return {status:"ok",label:"SAFE"};
+  if(v>=55) return {status:"warn",label:"WARNING"};
+  if(v>=30) return {status:"warn",label:"MAINTENANCE"};
+  return {status:"danger",label:"STOP"};
+}
+function ISIGauge({value}){
+  const tier = isiTier(value);
+  const color = tier.status==="ok"?"var(--safe)":tier.status==="warn"?"var(--warn)":"var(--danger)";
+  const size=240, stroke=16, r=(size-stroke)/2, c=2*Math.PI*r;
+  const pct = Math.max(0,Math.min(100,value))/100;
+  const arc = c*0.75, dash = arc*pct;
+  return (
+    <div className="panel relative flex flex-col items-center p-5 zg-scanline">
+      <SectionTitle eyebrow="Guardian" title="Industrial Safety Index (ISI)" />
+      <div className="relative" style={{width:size,height:size*0.75+20}}>
+        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="block">
+          <g transform={`rotate(135 ${size/2} ${size/2})`}>
+            <circle cx={size/2} cy={size/2} r={r} stroke="var(--border)" strokeWidth={stroke} fill="none" strokeDasharray={`${arc} ${c}`} strokeLinecap="round" />
+            <circle cx={size/2} cy={size/2} r={r} stroke={color} strokeWidth={stroke} fill="none" strokeDasharray={`${dash} ${c}`} strokeLinecap="round"
+              style={{transition:"stroke-dasharray 700ms cubic-bezier(.4,0,.2,1), stroke 400ms",filter:`drop-shadow(0 0 10px ${color})`}} />
+          </g>
+        </svg>
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center pt-4">
+          <div className="mono text-5xl font-bold tabular-nums" style={{color}}>{Math.round(value)}</div>
+          <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">ISI · 0–100</div>
+          <div className="mt-2 rounded border px-2 py-0.5 text-xs mono" style={{borderColor:color,color}}>{tier.label}</div>
+        </div>
+      </div>
+      <div className="mt-2 grid w-full grid-cols-4 gap-1 text-[10px] mono">
+        {[{l:"SAFE",c:"var(--safe)"},{l:"WARN",c:"var(--warn)"},{l:"MAINT",c:"var(--maint)"},{l:"STOP",c:"var(--danger)"}].map(b=>(
+          <div key={b.l} className="flex items-center gap-1 justify-center">
+            <span className="h-1.5 w-3 rounded" style={{background:b.c}} />
+            <span className="text-muted-foreground">{b.l}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function CircularScore({label,value,invert=false}){
+  const v=Math.max(0,Math.min(100,value));
+  const good = invert ? 100-v : v;
+  const color = good>=75?"var(--safe)":good>=45?"var(--warn)":"var(--danger)";
+  const size=130, stroke=12, r=(size-stroke)/2, c=2*Math.PI*r, dash=(c*v)/100;
+  return (
+    <div className="panel flex flex-col items-center gap-2 p-4">
+      <div className="w-full text-[10px] uppercase tracking-[0.25em] text-muted-foreground mono">{label}</div>
+      <div className="relative" style={{width:size,height:size}}>
+        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+          <circle cx={size/2} cy={size/2} r={r} stroke="var(--border)" strokeWidth={stroke} fill="none" />
+          <circle cx={size/2} cy={size/2} r={r} stroke={color} strokeWidth={stroke} fill="none"
+            strokeDasharray={`${dash} ${c}`} strokeLinecap="round" transform={`rotate(-90 ${size/2} ${size/2})`}
+            style={{transition:"stroke-dasharray 600ms, stroke 400ms",filter:`drop-shadow(0 0 8px ${color})`}} />
+        </svg>
+        <div className="absolute inset-0 grid place-items-center">
+          <div className="mono text-3xl font-bold tabular-nums" style={{color}}>{Math.round(v)}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ================= sensors ================= */
+function Sparkline({data,color}){
+  const w=120,h=32,min=Math.min(...data),max=Math.max(...data),range=max-min||1;
+  const pts = data.map((v,i)=>{const x=(i/(data.length-1))*w;const y=h-((v-min)/range)*h;return `${x.toFixed(1)},${y.toFixed(1)}`;}).join(" ");
+  return <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="w-full">
+    <polyline points={pts} fill="none" stroke={color} strokeWidth="1.5" style={{filter:`drop-shadow(0 0 4px ${color})`}} />
+  </svg>;
+}
+function SensorCard({name,s}){
+  const pct = Math.max(0,Math.min(100,((s.value-s.min)/(s.max-s.min))*100));
+  const color = s.status==="ok"?"var(--safe)":s.status==="warn"?"var(--warn)":"var(--danger)";
+  return (
+    <div className="rounded-md border border-border bg-panel-elevated p-3">
+      <div className="flex items-center justify-between">
+        <div className="text-[10px] uppercase tracking-wider text-muted-foreground mono">{name}</div>
+        <span className={`h-1.5 w-1.5 rounded-full ${statusBg[s.status]} zg-blink`} />
+      </div>
+      <div className="mt-1 flex items-baseline gap-1">
+        <span className="mono text-2xl font-bold tabular-nums" style={{color}}>
+          {s.value<0?"ERR":s.value.toFixed(s.unit==="V"?0:1)}
+        </span>
+        <span className="text-xs text-muted-foreground mono">{s.unit}</span>
+      </div>
+      <div className="mt-1 text-[10px] text-muted-foreground mono">Range {s.min}–{s.max} {s.unit}</div>
+      <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-panel">
+        <div className="h-full rounded-full transition-all duration-500" style={{width:`${pct}%`,background:color,boxShadow:`0 0 8px ${color}`}} />
+      </div>
+      <div className="mt-2"><Sparkline data={s.history} color={color} /></div>
+    </div>
+  );
+}
+function SensorPanel({state}){
+  const list = [
+    ["Temperature",state.sensors.temperature],
+    ["Current",state.sensors.current],
+    ["Voltage",state.sensors.voltage],
+    ["Vibration",state.sensors.vibration],
+    ["Power",state.sensors.power],
+  ];
+  return (
+    <div className="panel p-4">
+      <SectionTitle eyebrow="Telemetry" title="Live Sensor Panel"
+        right={<span className="text-[10px] mono text-muted-foreground">10 Hz · ESP32</span>} />
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        {list.map(([k,s])=><SensorCard key={k} name={k} s={s} />)}
+      </div>
+    </div>
+  );
+}
+
+/* ================= security ================= */
+const secLabels = {https:"HTTPS Uplink",rfid:"RFID Auth",known_device:"Known Device",tamper:"Tamper Switch",sensor_integrity:"Sensor Integrity",comm_integrity:"Comms Integrity"};
+function SecurityStatus({state}){
+  return (
+    <div className="panel p-4">
+      <SectionTitle eyebrow="Zero Trust" title="Security Status" />
+      <div className="grid gap-2 sm:grid-cols-2">
+        {Object.keys(secLabels).map(k=>{
+          const st = state.security[k];
+          return (
+            <div key={k} className="flex items-center justify-between rounded-md border border-border bg-panel-elevated px-3 py-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className={`h-2.5 w-2.5 rounded-full ${statusBg[st]} ${statusRing[st]} zg-blink`} />
+                <span className="text-sm truncate">{secLabels[k]}</span>
+              </div>
+              <span className={`text-[10px] mono uppercase ${statusColor[st]}`}>
+                {st==="ok"?"verified":st==="warn"?"review":"blocked"}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ================= decision + flow ================= */
+const decisionStyle = {
+  SAFE:{color:"var(--safe)",label:"SAFE TO OPERATE",sub:"All Guardian checks passed"},
+  WARNING:{color:"var(--warn)",label:"OPERATE WITH CAUTION",sub:"Anomaly detected — monitor"},
+  MAINTENANCE:{color:"var(--maint)",label:"MAINTENANCE REQUIRED",sub:"Component servicing needed"},
+  STOP:{color:"var(--danger)",label:"MACHINE STOPPED",sub:"Guardian denied operation"},
+};
+function GuardianDecision({state}){
+  const d = decisionStyle[state.decision];
+  return (
+    <div className="panel relative overflow-hidden p-5" style={{boxShadow:`0 0 0 1px ${d.color}33, 0 20px 40px -20px ${d.color}55`}}>
+      <div className="pointer-events-none absolute inset-0 opacity-20" style={{background:`radial-gradient(circle at 80% 20%, ${d.color}, transparent 60%)`}} />
+      <SectionTitle eyebrow="Guardian Engine" title="Current Decision"
+        right={<span className="mono text-[10px] uppercase text-muted-foreground">firmware inference</span>} />
+      <div className="relative flex flex-col gap-3">
+        <div className="flex items-center gap-3">
+          <div className="grid h-14 w-14 place-items-center rounded-lg border" style={{borderColor:d.color,color:d.color,boxShadow:`0 0 24px ${d.color}66`}}>
+            <svg viewBox="0 0 24 24" className="h-7 w-7" fill="none" stroke="currentColor" strokeWidth="2">
+              {state.decision==="SAFE" && <path d="M20 6 9 17l-5-5" />}
+              {state.decision==="WARNING" && <><path d="M12 2 1 21h22L12 2Z" /><path d="M12 9v5" /><circle cx="12" cy="18" r="1" /></>}
+              {state.decision==="MAINTENANCE" && <path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 0 5.4-5.4L15 12l-3-3 2.7-2.7Z" />}
+              {state.decision==="STOP" && <><rect x="4" y="4" width="16" height="16" rx="2" /><path d="M9 9h6v6H9z" /></>}
+            </svg>
+          </div>
+          <div>
+            <div className="mono text-3xl font-bold tracking-tight" style={{color:d.color}}>{d.label}</div>
+            <div className="text-xs text-muted-foreground">{d.sub}</div>
+          </div>
+        </div>
+        <div className="rounded-md border border-border bg-panel-elevated p-3">
+          <div className="text-[10px] uppercase mono tracking-wider text-muted-foreground">Reason</div>
+          <div className="mt-1 text-sm">{state.reason}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+const flowIcon = s => s==="ok"?{color:"var(--safe)",ch:"✓"}:s==="warn"?{color:"var(--warn)",ch:"!"}:s==="fail"?{color:"var(--danger)",ch:"✕"}:{color:"var(--muted-foreground)",ch:"…"};
+function GuardianFlow({state}){
+  return (
+    <div className="panel p-4">
+      <SectionTitle eyebrow="Decision Trace" title="Guardian Decision Flow"
+        right={<span className="mono text-[10px] uppercase text-safe zg-blink">● live</span>} />
+      <ol className="relative">
+        {state.flow.map((step,i)=>{
+          const ic = flowIcon(step.status);
+          const isFinal = i===state.flow.length-1;
+          return (
+            <li key={`${state.lastAttack}-${i}`} className="zg-flow-in relative flex items-start gap-3 pb-3" style={{animationDelay:`${i*40}ms`}}>
+              <div className="flex flex-col items-center">
+                <div className="grid h-6 w-6 place-items-center rounded-full border mono text-xs font-bold" style={{borderColor:ic.color,color:ic.color,boxShadow:`0 0 8px ${ic.color}66`}}>{ic.ch}</div>
+                {i<state.flow.length-1 && <div className="my-0.5 h-4 w-px" style={{background:ic.color,opacity:.4}} />}
+              </div>
+              <div className={`flex-1 rounded-md border px-3 py-1.5 text-sm ${isFinal?"bg-panel-elevated font-semibold":"bg-panel"}`} style={{borderColor:isFinal?ic.color:"var(--border)",color:isFinal?ic.color:undefined}}>
+                {step.label}
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+    </div>
+  );
+}
+
+/* ================= timeline + alerts ================= */
+const kindColor = {info:"var(--muted-foreground)",warn:"var(--warn)",danger:"var(--danger)",success:"var(--safe)"};
+function EventTimeline({state}){
+  return (
+    <div className="panel p-4">
+      <SectionTitle eyebrow="Audit" title="Event Timeline" />
+      <ul className="max-h-[340px] space-y-2 overflow-y-auto pr-1">
+        {state.timeline.map(e=>(
+          <li key={e.id} className="zg-flow-in flex items-start gap-3 rounded-md border border-border bg-panel-elevated px-3 py-2">
+            <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full" style={{background:kindColor[e.kind],boxShadow:`0 0 6px ${kindColor[e.kind]}`}} />
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-sm">{e.message}</div>
+              <div className="mono text-[10px] text-muted-foreground">{e.time}</div>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+const sevColor = {critical:"var(--danger)",high:"var(--maint)",medium:"var(--warn)",low:"var(--safe)"};
+function AlertCenter({state}){
+  return (
+    <div className="panel p-4">
+      <SectionTitle eyebrow="Incidents" title="Alert Center"
+        right={<span className="mono text-[10px] uppercase text-muted-foreground">{state.alerts.length} active</span>} />
+      <ul className="space-y-2">
+        {state.alerts.map(a=>(
+          <li key={a.id} className="flex items-center gap-3 rounded-md border border-border bg-panel-elevated px-3 py-2">
+            <span className="mono text-[10px] uppercase px-2 py-0.5 rounded border" style={{color:sevColor[a.severity],borderColor:sevColor[a.severity]}}>{a.severity}</span>
+            <span className="flex-1 truncate text-sm">{a.title}</span>
+            <span className="mono text-[10px] text-muted-foreground">{a.time}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/* ================= attack simulator ================= */
+function AttackSimulator({onAttack,active}){
+  return (
+    <div className="panel p-4">
+      <SectionTitle eyebrow="Red Team" title="Attack Simulator"
+        right={<span className="mono text-[10px] uppercase text-warn">simulation mode</span>} />
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-3">
+        {attackList.map(a=>{
+          const isNormal = a.id==="normal";
+          const isActive = active===a.id;
+          return (
+            <button key={a.id} onClick={()=>onAttack(a.id)}
+              className={`group relative overflow-hidden rounded-md border px-3 py-2 text-left text-xs transition-all
+                ${isActive
+                  ? isNormal
+                    ? "border-safe bg-safe/10 text-safe shadow-[0_0_20px_var(--safe)]"
+                    : "border-danger bg-danger/10 text-danger shadow-[0_0_20px_var(--danger)]"
+                  : "border-border bg-panel-elevated hover:border-safe/50 hover:text-safe"}`}>
+              <div className="mono text-[10px] uppercase tracking-wider opacity-70">{isNormal?"restore":"simulate"}</div>
+              <div className="mt-0.5 truncate font-semibold">{a.label}</div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ================= digital twin ================= */
+function DigitalTwin({state}){
+  const st = motorColor[state.motor];
+  const color = st==="ok"?"var(--safe)":st==="warn"?"var(--warn)":"var(--danger)";
+  return (
+    <div className="panel relative overflow-hidden p-4">
+      <SectionTitle eyebrow="Digital Twin" title={`Motor · ${state.motor}`}
+        right={
+          <div className="flex items-center gap-1">
+            {state.visualFx.tamperFlash && <span className="mono text-[10px] rounded border border-danger px-1.5 py-0.5 text-danger zg-blink">TAMPER</span>}
+            {state.visualFx.commLost && <span className="mono text-[10px] rounded border border-danger px-1.5 py-0.5 text-danger zg-blink">LINK LOST</span>}
+          </div>
+        } />
+      <div className="relative grid h-[280px] place-items-center rounded-md border border-border" style={{background:"radial-gradient(circle at 50% 50%, oklch(0.22 0.015 260), oklch(0.14 0.01 260))"}}>
+        <svg className="absolute inset-0 h-full w-full opacity-30" viewBox="0 0 400 280" preserveAspectRatio="none">
+          <defs>
+            <pattern id="g" width="20" height="20" patternUnits="userSpaceOnUse">
+              <path d="M20 0H0V20" fill="none" stroke="var(--border)" strokeWidth="0.5" />
+            </pattern>
+          </defs>
+          <rect width="400" height="280" fill="url(#g)" />
+        </svg>
+        <div className={`relative ${state.visualFx.shake?"zg-shake":""} ${state.visualFx.heat?"zg-heat":""}`}>
+          {state.visualFx.heat && <div className="pointer-events-none absolute -inset-8 rounded-full" style={{background:"radial-gradient(circle, oklch(0.68 0.25 27 / 0.35), transparent 70%)"}} />}
+          <svg width="220" height="140" viewBox="0 0 220 140">
+            <rect x="10" y="90" width="200" height="14" rx="2" fill="var(--panel-elevated)" stroke="var(--border)" />
+            <rect x="40" y="30" width="120" height="70" rx="8" fill="var(--panel-elevated)" stroke={color} strokeWidth="1.5" />
+            {[0,1,2,3,4,5].map(i=><line key={i} x1={50+i*18} y1="34" x2={50+i*18} y2="96" stroke={color} strokeOpacity="0.4" />)}
+            <rect x="160" y="58" width="40" height="14" rx="2" fill="var(--panel-elevated)" stroke="var(--border)" />
+            <g transform="translate(100 65)" className={state.motor==="RUNNING"?"zg-spin-slow":""} style={{transformOrigin:"0 0"}}>
+              <circle r="22" fill="none" stroke={color} strokeWidth="2" style={{filter:`drop-shadow(0 0 6px ${color})`}} />
+              <line x1="-22" y1="0" x2="22" y2="0" stroke={color} strokeWidth="2" />
+              <line x1="0" y1="-22" x2="0" y2="22" stroke={color} strokeWidth="2" />
+            </g>
+            <circle cx="50" cy="42" r="3" fill={color} style={{filter:`drop-shadow(0 0 4px ${color})`}} className="zg-blink" />
+          </svg>
+          <div className="mt-2 text-center">
+            <div className="mono text-[10px] uppercase text-muted-foreground">Status</div>
+            <div className="mono text-sm font-bold" style={{color}}>{state.motor}</div>
+          </div>
+        </div>
+        <div className="absolute right-3 top-3 flex items-center gap-1 text-[10px] mono" style={{color:state.visualFx.commLost?"var(--danger)":"var(--safe)"}}>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M17 18a5 5 0 0 0 0-10 7 7 0 0 0-13 3 4 4 0 0 0 1 8h12Z" />
+          </svg>
+          {state.visualFx.commLost?"OFFLINE":"LINK OK"}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ScoreRow({state}){
+  return (
+    <div className="grid gap-3 sm:grid-cols-3">
+      <CircularScore label="Machine Health" value={state.health} />
+      <CircularScore label="Trust Score" value={state.trust} />
+      <CircularScore label="Predictive Risk" value={state.risk} invert />
+    </div>
+  );
+}
+
+/* ================= root ================= */
+function Dashboard(){
+  const [state,setState] = useState(initialState);
+  useEffect(()=>{const i=setInterval(()=>setState(s=>tickSensors(s)),1500);return()=>clearInterval(i);},[]);
+  const onAttack = id => setState(s => applyAttack(s,id));
+  return (
+    <div className="min-h-screen p-3 sm:p-5 lg:p-6">
+      <div className="mx-auto max-w-[1600px] space-y-4">
+        <Header state={state} />
+        <MachineOverview state={state} />
+        <div className="grid gap-4 lg:grid-cols-12">
+          <div className="lg:col-span-4"><ISIGauge value={state.isi} /></div>
+          <div className="lg:col-span-4 space-y-4">
+            <ScoreRow state={state} />
+            <GuardianDecision state={state} />
+          </div>
+          <div className="lg:col-span-4"><DigitalTwin state={state} /></div>
+        </div>
+        <SensorPanel state={state} />
+        <div className="grid gap-4 lg:grid-cols-12">
+          <div className="lg:col-span-4"><SecurityStatus state={state} /></div>
+          <div className="lg:col-span-4"><GuardianFlow state={state} /></div>
+          <div className="lg:col-span-4 space-y-4">
+            <AlertCenter state={state} />
+            <EventTimeline state={state} />
+          </div>
+        </div>
+        <AttackSimulator onAttack={onAttack} active={state.lastAttack} />
+        <footer className="pt-2 text-center mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
+          ZGuard · Zero Trust Industrial Guardian · Hackathon MVP · Simulated Data
+        </footer>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<Dashboard />);
+</script>
+</body>
+</html>
