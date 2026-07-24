@@ -98,7 +98,7 @@ J --> M
 K --> M
 ```
 
-## Detailed Workflow
+## Guardian Intelligence Workflow
 
 This is the exact decision sequence the ESP32 runs on every loop cycle — from raw sensor read to physical action.
 
