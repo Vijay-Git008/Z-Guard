@@ -38,7 +38,7 @@ An intelligent Industrial IoT platform that combines real-time machine health mo
 
 ---
 
-## System Architecture
+## Zero Trust System Architecture
 
 ```mermaid
 flowchart LR
