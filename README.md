@@ -260,7 +260,7 @@ Device Isolation (if required)
 
 ---
 
-# ⚠️ Challenges Faced
+# ⚠️ Cyber Defense Challenges Faced
 
 - Integrating hardware components (ESP32, RFID, voltage and current sensors).
 - Ensuring reliable real-time sensor data transmission.
